@@ -1,72 +1,96 @@
-    const clientModel = require("../models/client");
-    const moderatorModel = require("../models/moderator");
-    const adminModel = require("../models/admin");
+const userModel = require('../models/user');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-    const bcrypt = require("bcrypt");
-    const jwt = require("json-web-token");
 
-    module.exports = {
-    clientRegister: async (req, res) => {
-        try {
-        if (
-            !req.body.firstName ||
-            !req.body.lastName ||
-            !req.body.userName ||
-            !req.body.email ||
-            !req.body.role ||
-            !req.body.password
-        ) {
-            return res.status(400).json({
-            message: "required_fields_are_missing",
-            });
-        }
 
-        const exists = await clientModel.findOne({
-            userName: req.body.userName,
+module.exports = {
+  register: async (req, res) => {
+    try {
+      if (
+        !req.body.firstName ||
+        !req.body.lastName ||
+        !req.body.userName ||
+        !req.body.email ||
+        !req.body.password
+      ) {
+        return res.status(400).json({
+          message: "required_fields_are_missing",
         });
+      }
 
-        if (exists) { 
-            return res.status(409).json({
-            message: "user_already_exists",
+      const exists = await userModel.findOne({
+        userName: req.body.userName,
+      });
+
+      if (exists) {
+        return res.status(409).json({
+          message: "user_already_exists",
+        });
+      }
+
+      const hashPassword = bcrypt.hashSync(req.body.password, 10);
+
+      const savedUser = await new userModel({
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        userName: req.body.userName,
+        email: req.body.email,
+        password: hashPassword,
+        address: req.body.address,
+        role: 'admin'
+      }).save();
+
+        const token = jwt.sign(
+          {
+            id: savedUser._id,
+            firstName: savedUser.firstName,
+            lastName: savedUser.lastName,
+            userName: savedUser.userName,
+            email: savedUser.email,
+            address: savedUser.address,
+            role: savedUser.role
+          },
+          process.env.SECRET_KEY
+        );
+
+      res.json({ token });
+    } catch (err) {
+      res.status(500).send(err);
+    }
+  },
+
+  login: async (req, res) => {
+    try {
+        const user = await userModel.findOne({ userName: req.body.userName });
+        if (!user) {
+            return res.status(404).json({
+                message: 'user_not_found'
             });
         }
+        if (bcrypt.compareSync(req.body.password, user.password)) {
+            
+                const token = jwt.sign(
+                  {
+                    id: user._id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    userName: user.userName,
+                    email: user.email,
+                    address: user.address,
+                    role: user.role
+                  },
+                  process.env.SECRET_KEY
+                );
 
-        const hashPassword = bcrypt.hashSync(req.body.password, 10);
-
-        const savedClient = await new clientModel({
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            userName: req.body.userName,
-            email: req.body.email,
-            password: hashPassword,
-            address: req.body.address
-        }).save()
-
-        let token;
-
-        if (savedClient.address) {
-            token = jwt.sign({
-                id: savedClient._id,
-                firstName: savedClient.firstName,
-                lastName: savedClient.lastName,
-                userName: savedClient.userName,
-                email: savedClient.email,
-                address: savedClient.address
-            }, process.env.SECRET_KEY)
+              res.json({ token });
         } else {
-            token = jwt.sign({
-                id: savedClient._id,
-                firstName: savedClient.firstName,
-                lastName: savedClient.lastName,
-                userName: savedClient.userName,
-                email: savedClient.email,
-            }, process.env.SECRET_KEY)
+            return res.status(404).json({
+                message: 'user_not_found'
+            });
         }
-        
-        res.json({ token })
-
-        } catch (err) {
-        res.status(500).send(err);
-        }
-    },
-    };
+    } catch (err) {
+        res.status(500).send(err)
+    }
+  }
+};
