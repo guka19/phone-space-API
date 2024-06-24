@@ -1,9 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const studentService = require("../services/smartphoneService");
 const smartphoneService = require("../services/smartphoneService");
-
 
 /**
  * @swagger
@@ -21,7 +19,7 @@ const smartphoneService = require("../services/smartphoneService");
  *                          items: 
  *                              $ref: '#/components/schemas/Smartphone'
  */
-router.get("/all", studentService.getAll);
+router.get("/all", smartphoneService.getAll);
 
 /**
  * @swagger
@@ -46,7 +44,7 @@ router.get("/all", studentService.getAll);
  *       404:
  *         description: Smartphone not found
  */
-router.get("/:id", studentService.getById);
+router.get("/:id", smartphoneService.getById);
 
 /**
  * @swagger
@@ -70,7 +68,7 @@ router.get("/:id", studentService.getById);
  *       400:
  *         description: Bad request, check your request body
  */
-router.post("/add", studentService.add);
+router.post("/add", smartphoneService.add);
 
 /**
  * @swagger
@@ -91,7 +89,7 @@ router.post("/add", studentService.add);
  *       404:
  *         description: Smartphone not found
  */
-router.delete("/:id", studentService.delete);
+router.delete("/:id", smartphoneService.delete);
 
 /**
  * @swagger
@@ -122,14 +120,58 @@ router.delete("/:id", studentService.delete);
  *       400:
  *         description: Bad request, check your request body
  */
-router.patch("/:id", studentService.update);
+router.patch("/:id", smartphoneService.update);
 
+/**
+ * @swagger
+ * /smartphones/cart/add:
+ *   post:
+ *     summary: Add a smartphone to the cart
+ *     tags: [Cart]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Cart'
+ *     responses:
+ *       200:
+ *         description: Smartphone successfully added to the cart
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Cart'
+ *       400:
+ *         description: Bad request, check your request body
+ */
 router.post("/cart/add", smartphoneService.addToCart);
+
+/**
+ * @swagger
+ * /smartphones/cart/{id}:
+ *   get:
+ *     summary: Get a user's cart by user ID
+ *     tags: [Cart]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the user to get the cart
+ *     responses:
+ *       200:
+ *         description: The user's cart details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Cart'
+ *       404:
+ *         description: Cart not found
+ */
 router.get("/cart/:id", smartphoneService.getCartByUserId);
 
 module.exports = router;
-
-
 
 /**
  * @swagger
@@ -283,33 +325,37 @@ module.exports = router;
  *             fastCharging:
  *               type: boolean
  *               description: Fast charging capability
- *             wirelessCharging:
- *               type: boolean
- *               description: Wireless charging capability
- *             dustResistance:
- *               type: boolean
- *               description: Dust resistance capability
  *           description: Special features of the smartphone
  *         imageUrls:
  *           type: array
  *           items:
  *             type: string
- *           description: URLs of images for the smartphone
+ *           description: URLs of the smartphone images
  *         price:
  *           type: number
- *           description: Price of the smartphone in specified currency
+ *           description: Price of the smartphone
  *         availability:
  *           type: string
- *           enum:
- *             - in stock
- *             - low stock
- *             - out of stock
  *           description: Availability status of the smartphone
- */
-
-/**
- * @swagger
- * tags:
- *  name: Smartphones
- *  description: The smartphones managing API
+ *     Cart:
+ *       type: object
+ *       required:
+ *         - userId
+ *         - items
+ *       properties:
+ *         userId:
+ *           type: string
+ *           description: ID of the user who owns the cart
+ *         items:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               smartphoneId:
+ *                 type: string
+ *                 description: ID of the smartphone added to the cart
+ *               quantity:
+ *                 type: integer
+ *                 description: Quantity of the smartphone added to the cart
+ *           description: Array of smartphones added to the cart with their quantities
  */
