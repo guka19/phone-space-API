@@ -126,7 +126,7 @@ router.patch("/:id", smartphoneService.update);
  * @swagger
  * /smartphones/cart/add:
  *   post:
- *     summary: Add a smartphone to the cart
+ *     summary: Add smartphones to the cart
  *     tags: [Cart]
  *     requestBody:
  *       required: true
@@ -136,7 +136,7 @@ router.patch("/:id", smartphoneService.update);
  *             $ref: '#/components/schemas/Cart'
  *     responses:
  *       200:
- *         description: Smartphone successfully added to the cart
+ *         description: Smartphones successfully added to the cart
  *         content:
  *           application/json:
  *             schema:
@@ -144,7 +144,7 @@ router.patch("/:id", smartphoneService.update);
  *       400:
  *         description: Bad request, check your request body
  */
-router.post("/cart/add", smartphoneService.addToCart);
+router.post("/cart/add", smartphoneService.addCart);
 
 /**
  * @swagger
@@ -341,12 +341,12 @@ module.exports = router;
  *       type: object
  *       required:
  *         - userId
- *         - items
+ *         - products
  *       properties:
  *         userId:
  *           type: string
  *           description: ID of the user who owns the cart
- *         items:
+ *         products:
  *           type: array
  *           items:
  *             type: object

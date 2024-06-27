@@ -4,6 +4,13 @@ const userService = require("../services/userService");
 
 /**
  * @swagger
+ * tags:
+ *   name: Users
+ *   description: API endpoints for managing users
+ */
+
+/**
+ * @swagger
  * /users/register:
  *   post:
  *     summary: Register a new user
@@ -24,6 +31,7 @@ const userService = require("../services/userService");
  *       400:
  *         description: Bad request, check your request body
  */
+
 router.post("/register", userService.register);
 
 /**
@@ -50,6 +58,7 @@ router.post("/register", userService.register);
  *       401:
  *         description: Unauthorized, invalid credentials
  */
+
 router.post("/login", userService.login);
 
 module.exports = router;
@@ -106,21 +115,21 @@ module.exports = router;
  *     UserLogin:
  *       type: object
  *       properties:
- *         userName:
+ *         email:
  *           type: string
- *           description: Username of the user
+ *           description: Email address of the user
  *         password:
  *           type: string
  *           description: Password of the user
  *       required:
- *         - userName
+ *         - email
  *         - password
  *     UserLoginResponse:
  *       type: object
  *       properties:
  *         token:
  *           type: string
- *           description: JWT token
+ *           description: JWT token for authenticated requests
  *         user:
  *           $ref: '#/components/schemas/User'
  */

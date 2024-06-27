@@ -7,20 +7,9 @@ const jwt = require('jsonwebtoken');
 module.exports = {
   register: async (req, res) => {
     try {
-      if (
-        !req.body.firstName ||
-        !req.body.lastName ||
-        !req.body.userName ||
-        !req.body.email ||
-        !req.body.password
-      ) {
-        return res.status(400).json({
-          message: "required_fields_are_missing",
-        });
-      }
 
       const exists = await userModel.findOne({
-        userName: req.body.userName,
+        email: req.body.email,
       });
 
       if (exists) {
@@ -56,13 +45,14 @@ module.exports = {
 
       res.json({ token });
     } catch (err) {
+      console.log(err)
       res.status(500).send(err);
     }
   },
 
   login: async (req, res) => {
     try {
-        const user = await userModel.findOne({ userName: req.body.userName });
+        const user = await userModel.findOne({ email: req.body.email });
         if (!user) {
             return res.status(404).json({
                 message: 'user_not_found'

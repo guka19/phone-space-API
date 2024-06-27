@@ -87,10 +87,19 @@ function onListening() {
   debug("Listening on " + bind);
 }
 
-function startServer() {
+async function startServer() {
   server.listen(port);
   server.on("error", onError);
   server.on("listening", onListening);
+
+  const swaggerUrl = `http://localhost:${port}/api-docs`;
+
+  try {
+    const open = await import('open');
+    open.default(swaggerUrl);
+  } catch (err) {
+    console.error("Failed to open browser:", err);
+  }
 }
 
 

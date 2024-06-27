@@ -42,39 +42,46 @@ module.exports = {
 
   update: async (req, res) => {
     try {
-      const item = await studentModel.findByIdAndUpdate(
+      const item = await smartphoneModel.findByIdAndUpdate(
         req.params.id,
         { $set: req.body },
         {
           new: true,
         }
       );
+      res.json(item);
     } catch (error) {
       res.status(500).json(error);
     }
   },
 
-  addToCart: async (req, res) => {
+  addCart: async (req, res) => {
     try {
-      const { userId, smartphoneId, quantity } = req.body;
+      const { userId, products } = req.body;
 
-      let cart = await cartModel.findOne({ user: userId });
+      // Find if the cart already exists for the user
+      let cart = await cartModel.findOne({ userId });
 
-      if (!cart) {
-        cart = new cartModel({
-          user: userId,
-          products: [{ smartphone: smartphoneId, quantity }],
+      if (cart) {
+        // If the cart exists, update quantities or add new products
+        products.forEach(({ smartphoneId, quantity }) => {
+          const productIndex = cart.products.findIndex(
+            (p) => p.smartphoneId.toString() === smartphoneId
+          );
+
+          if (productIndex > -1) {
+            // If the product exists, update the quantity
+            cart.products[productIndex].quantity += quantity;
+          } else {
+            // If the product does not exist, add it to the cart
+            cart.products.push({ smartphoneId, quantity });
+          }
         });
       } else {
-        const productIndex = cart.products.findIndex((product) =>
-          product.smartphone.equals(smartphoneId)
-        );
-
-        if (productIndex > -1) {
-          cart.products[productIndex].quantity += quantity;
-        } else {
-          cart.products.push({ smartphone: smartphoneId, quantity });
-        }
+        cart = new cartModel({
+          userId,
+          products,
+        });
       }
 
       const savedCart = await cart.save();
@@ -86,19 +93,17 @@ module.exports = {
 
   getCartByUserId: async (req, res) => {
     try {
-      const userId = req.params.userId;
-
-      const cart = await cartModel
-        .findOne({ user: userId })
-        .populate("products.smartphone");
-
+      const userId = req.params.id;
+      const cart = await cartModel.findOne({ userId });
+  
       if (!cart) {
         return res.status(404).json({ message: "Cart not found" });
       }
-
-      res.json(cart.products);
+  
+      res.json(cart);
     } catch (error) {
+      console.log(error);
       res.status(500).json(error);
     }
-  },
+  },  
 };
